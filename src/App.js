@@ -1,26 +1,33 @@
 import React from 'react';
-import logo from './logo.svg';
+import { BrowserRouter as Router, Route, Switch, Link } from 'react-router-dom';
 import './App.css';
+import Login from './components/auth/Login';
+import Register from './components/auth/Register';
+import Game from './components/game';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+class App extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      date: new Date()
+    };
+  }
+
+  render () {
+    return <Router>
+        <div>
+          <div> { this.state.date + '' } </div>
+          <Link to="/login">singIn</Link><br/>
+          <Link to="/register">singUp</Link><br/>
+          <Link to="/game">game</Link>
+          <Switch>
+            <Route exact path="/login" component={Login} />
+            <Route path="/register" component={Register} />
+            <Route path="/game" component={Game} />
+          </Switch>
+        </div>
+      </Router>
+  };
 }
 
 export default App;

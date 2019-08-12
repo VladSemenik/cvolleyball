@@ -1,12 +1,15 @@
 import React from 'react';
 import styles from './index.css';
 import io from 'socket.io-client';
+import TextField from '@material-ui/core/TextField';
+import Button from '@material-ui/core/Button';
 
 class Game extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       data: "Game page",
+      game: false,
       ball: {
         radius: 4,
         x: 30,
@@ -290,9 +293,22 @@ class Game extends React.Component {
 
   render () {
     return <div>
-      <canvas id="canvas" className={styles.canvas} width={window.innerWidth} height={window.innerHeight}>
-      </canvas>
-    </div>;
+        <form className={"game__form-create"} noValidate autoComplete="off">
+          <TextField
+            className={"game_name-field"}
+            label="name"
+            margin="normal"
+          />
+          <Button
+            className={"game_button-create"}
+            variant="contained"
+          >
+            Create
+          </Button>
+        </form>
+        <canvas id="canvas" className={"game_canvas"} width={window.innerWidth} height={window.innerHeight}>
+        </canvas>
+      </div>;
   };
 }
 

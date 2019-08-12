@@ -16,7 +16,6 @@ class App extends React.Component {
   render () {
     return <Router>
         <div>
-          <div> { this.state.date + '' } </div>
           <Link to="/login">singIn</Link><br/>
           <Link to="/register">singUp</Link><br/>
           <Link to="/game">game</Link>

@@ -1,4 +1,5 @@
 import React from 'react';
+import axios from 'axios';
 import styles from './index.css';
 import io from 'socket.io-client';
 import TextField from '@material-ui/core/TextField';
@@ -10,6 +11,7 @@ class Game extends React.Component {
     this.state = {
       data: "Game page",
       game: false,
+      gameName: '',
       ball: {
         radius: 4,
         x: 30,
@@ -52,6 +54,8 @@ class Game extends React.Component {
         y: 0,
       }
     };
+    this.changeGameName = this.changeGameName.bind(this);
+    this.createGame = this.createGame.bind(this);
   }
 
   async playerMove (playerSide = "player") {
@@ -166,20 +170,38 @@ class Game extends React.Component {
     }
   }
 
+  createGame() {
+    axios.get(`http://localhost:3030/api/game/create/${this.state.gameName}`)
+      .then(async (res) => {
+
+        const socket = await io(`http://localhost:3031/${this.state.gameName}`, {transports: ['websocket', 'polling', 'flashsocket']});
+
+        await socket.on('ball point', (data) => {
+          this.setState((state, props) => ({
+            ball: Object.assign(state.ball, JSON.parse(data))
+          }));
+        });
+
+        await socket.on('enemy point', (data) => {
+          this.setState((state, props) => ({
+            enemy: Object.assign(state.enemy, JSON.parse(data))
+          }));
+        });
+        console.log(res.data);
+      })
+      .catch(err => {
+        console.log(err);
+      })
+  }
+
+  changeGameName(obj) {
+    const value = obj.target.value;
+    this.setState((state, props) => ({
+      gameName: value
+    }));
+  }
+
   componentDidMount() {
-    const socket = io.connect('http://172.20.1.20:3030');
-
-    socket.on('ball point', (data) => {
-      this.setState((state, props) => ({
-        ball: Object.assign(state.ball, JSON.parse(data))
-      }));
-    });
-
-    socket.on('enemy point', (data) => {
-      this.setState((state, props) => ({
-        enemy: Object.assign(state.enemy, JSON.parse(data))
-      }));
-    });
 
     document.querySelector('canvas').addEventListener('mousedown', async (e) => {
       if (e.button === 0) {
@@ -273,7 +295,7 @@ class Game extends React.Component {
         else
           ball.dy = -ay;
 
-
+        const socket = await io(`http://localhost:3031/${this.state.gameName}`, {transports: ['websocket', 'polling', 'flashsocket']});
         await socket.emit('ball point', JSON.stringify(this.state.ball));
       }
 
@@ -295,11 +317,13 @@ class Game extends React.Component {
     return <div>
         <form className={"game__form-create"} noValidate autoComplete="off">
           <TextField
+            onChange={this.changeGameName}
             className={"game_name-field"}
             label="name"
             margin="normal"
           />
           <Button
+            onClick={this.createGame}
             className={"game_button-create"}
             variant="contained"
           >

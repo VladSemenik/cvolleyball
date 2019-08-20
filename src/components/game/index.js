@@ -12,6 +12,7 @@ class Game extends React.Component {
       data: "Game page",
       game: false,
       gameName: '',
+      gameConnection: {},
       ball: {
         radius: 4,
         x: 30,
@@ -36,19 +37,19 @@ class Game extends React.Component {
         Up: false,
         Kick: false,
       },
-      enemy: {
-        name: '',
-        radius: 6,
-        x: 40,
-        y: 40,
-        dx: 0,
-        dy: 0,
-        gravity: 0.0085,
-        drag: 0.8,
-        Right: false,
-        Left: false,
-        Up: false,
-      },
+      // enemy: {
+      //   name: '',
+      //   radius: 6,
+      //   x: 40,
+      //   y: 40,
+      //   dx: 0,
+      //   dy: 0,
+      //   gravity: 0.0085,
+      //   drag: 0.8,
+      //   Right: false,
+      //   Left: false,
+      //   Up: false,
+      // },
       aim: {
         x: 0,
         y: 0,
@@ -176,10 +177,17 @@ class Game extends React.Component {
 
         const socket = await io(`http://localhost:3031/${this.state.gameName}`, {transports: ['websocket', 'polling', 'flashsocket']});
 
+        this.setState( (state, props) => ({
+          gameConnection: socket
+        }));
+
+        console.log(socket);
+
         await socket.on('ball point', (data) => {
           this.setState((state, props) => ({
             ball: Object.assign(state.ball, JSON.parse(data))
           }));
+          console.log("ball point", data);
         });
 
         await socket.on('enemy point', (data) => {
@@ -187,6 +195,18 @@ class Game extends React.Component {
             enemy: Object.assign(state.enemy, JSON.parse(data))
           }));
         });
+        if (res.data.createdStatus === 'connected') {
+
+          const player = {
+            x: 60,
+            y: 40,
+            color: 'green',
+          };
+
+          await this.setState((state, props) => ({
+            player: Object.assign(state.player, player)
+          }));
+        }
         console.log(res.data);
       })
       .catch(err => {
@@ -295,13 +315,14 @@ class Game extends React.Component {
         else
           ball.dy = -ay;
 
-        const socket = await io(`http://localhost:3031/${this.state.gameName}`, {transports: ['websocket', 'polling', 'flashsocket']});
+        await this.setState((state, props) => ({
+          ball: ball
+        }));
+
+        const socket = await this.state.gameConnection;
         await socket.emit('ball point', JSON.stringify(this.state.ball));
       }
 
-      await this.setState((state, props) => ({
-        ball: ball
-      }));
 
       await this.playerMove();
       await this.ballMove();

@@ -6,6 +6,7 @@ import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 
 import Wall from '../../controllers/Wall';
+import Ball from '../../controllers/Ball';
 
 class Game extends React.Component {
   constructor(props) {
@@ -169,16 +170,6 @@ class Game extends React.Component {
       ctx.beginPath();
       ctx.arc(x, y, radius * window.innerWidth / 100, 0, Math.PI * 2, true);
       ctx.fill();
-    }
-  }
-
-  wallFigure(canvas, x, y, width, height, color) {
-    if (canvas.getContext) {
-      const ctx = canvas.getContext('2d');
-
-      ctx.fillStyle = color;
-      ctx.beginPath();
-      ctx.fillRect(x, y, width, height);
     }
   }
 

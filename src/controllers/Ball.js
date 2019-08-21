@@ -1,12 +1,12 @@
 class Ball {
-  constructor() {
-    this.radius = 4;
-    this.x = 30;
-    this.y = 100;
-    this.dx = 0;
-    this.dy = 0;
-    this.gravity = 0.00085;
-    this.drag = 0.8;
+  constructor(radius, x, y, dx, dy, gravity, drag) {
+    this.radius = radius;
+    this.x = x;
+    this.y = y;
+    this.dx = dx;
+    this.dy = dy;
+    this.gravity = gravity;
+    this.drag = drag;
   }
 
   ballMove () {
@@ -37,4 +37,36 @@ class Ball {
     }
   }
 
+  ballDraw (canvas, color) {
+    if (canvas.getContext) {
+      const ctx = canvas.getContext('2d');
+
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(this.x * window.innerWidth / 100, (100 - this.y) * window.innerHeight / 100, this.radius, 0, Math.PI * 2, true);
+      ctx.fill();
+    }
+  }
+
+  set configBall (params) {
+    this.radius = params.radius;
+    this.x = params.x;
+    this.y = params.y;
+    this.dx = params.dx;
+    this.dy = params.dy;
+    this.gravity = params.gravity;
+    this.drag = params.drag;
+  }
+
+  get configBall () {
+    return {
+      "radius": this.radius,
+      "x": this.x,
+      "y": this.y,
+      "dx": this.dx,
+      "dy": this.dy,
+      "gravity": this.gravity,
+      "drag": this.drag,
+    }
+  }
 }

@@ -20,6 +20,11 @@ class Ball {
     if(this.x > 100-this.radius*2) {
       this.dx *= -1;
     }
+    if(this.y > 100 - this.radius*2) {
+      this.y = 100 - this.radius*2;
+      this.dy = -this.dy * this.drag;
+      this.dx = this.dx * this.drag;
+    }
     if(this.y < this.radius*2) {
       this.y = this.radius*2;
       this.dy = -this.dy * this.drag;
@@ -43,7 +48,7 @@ class Ball {
 
       ctx.fillStyle = color;
       ctx.beginPath();
-      ctx.arc(this.x * window.innerWidth / 100, (100 - this.y) * window.innerHeight / 100, this.radius, 0, Math.PI * 2, true);
+      ctx.arc(this.x * window.innerWidth / 100, (100 - this.y) * window.innerHeight / 100, this.radius * window.innerWidth / 100, 0, Math.PI * 2, true);
       ctx.fill();
     }
   }
@@ -70,3 +75,5 @@ class Ball {
     }
   }
 }
+
+export default Ball;

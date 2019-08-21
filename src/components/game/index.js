@@ -7,6 +7,7 @@ import Button from '@material-ui/core/Button';
 
 import Wall from '../../controllers/Wall';
 import Ball from '../../controllers/Ball';
+const ball = new Ball(4, 30, 100, 0, 0, 0.00085, 0.8);
 
 class Game extends React.Component {
   constructor(props) {
@@ -16,15 +17,6 @@ class Game extends React.Component {
       game: false,
       gameName: '',
       gameConnection: {},
-      ball: {
-        radius: 4,
-        x: 30,
-        y: 100,
-        dx: 0,
-        dy: 0,
-        gravity: 0.00085,
-        drag: 0.8,
-      },
       player: {
         name: '',
         color: 'red',
@@ -111,56 +103,6 @@ class Game extends React.Component {
     }))
   }
 
-  async ballMove () {
-    const ball = await Object.assign({}, this.state.ball);
-    ball.dy -= ball.gravity;
-    ball.x += ball.dx/2;
-    ball.y += ball.dy;
-
-    if(ball.x < ball.radius*2) {
-      ball.dx *= -1;
-    }
-    if(ball.x > 100-ball.radius*2) {
-      ball.dx *= -1;
-    }
-    if(ball.y > 100 - ball.radius*2) {
-      ball.y = 100 - ball.radius*2;
-      ball.dy = -ball.dy * ball.drag;
-      ball.dx = ball.dx * ball.drag;
-    }
-    if(ball.y < ball.radius*2) {
-      ball.y = ball.radius*2;
-      ball.dy = -ball.dy * ball.drag;
-      ball.dx = ball.dx * ball.drag;
-    }
-    // wall
-    if (ball.x+ball.radius >= 48 && ball.x-ball.radius <= 52 && ball.y <= 75) {
-      if (ball.x < 48) {
-        ball.dx *= -1;
-        ball.x = 48-ball.radius;
-      }else {
-        ball.dx *= -1;
-        ball.x = 52+ball.radius;
-      }
-    }
-
-    await this.setState((state, props) => ({
-      ball: ball
-    }))
-  }
-
-  ballFigure(x, y, color, radius) {
-    const canvas = document.getElementById('canvas');
-    if (canvas.getContext) {
-      const ctx = canvas.getContext('2d');
-
-      ctx.fillStyle = color;
-      ctx.beginPath();
-      ctx.arc(x, y, radius * window.innerWidth / 100, 0, Math.PI * 2, true);
-      ctx.fill();
-    }
-  }
-
   playerFigure(x, y, color, radius) {
     const canvas = document.getElementById('canvas');
     if (canvas.getContext) {
@@ -194,9 +136,7 @@ class Game extends React.Component {
         console.log(socket);
 
         await socket.on('ball point', (data) => {
-          this.setState((state, props) => ({
-            ball: Object.assign(state.ball, JSON.parse(data))
-          }));
+          ball.configBall = JSON.parse(data);
           console.log("ball point", data);
         });
 
@@ -316,22 +256,22 @@ class Game extends React.Component {
       await this.playerFigure(this.state.player.x * window.innerWidth / 100, (100 - this.state.player.y) * window.innerHeight / 100, this.state.player.color, this.state.player.radius);
       await this.playerFigure(this.state.enemy.x * window.innerWidth / 100, (100 - this.state.enemy.y) * window.innerHeight / 100, this.state.enemy.color, this.state.enemy.radius);
 
-      await this.ballFigure(this.state.ball.x * window.innerWidth / 100, (100 - this.state.ball.y) * window.innerHeight / 100, 'gray', this.state.ball.radius);
+      await ball.ballDraw(document.getElementById('canvas'), 'gray');
 
       await wall.drawWall(document.getElementById('canvas'));
     }, 0);
 
     setInterval(async () => {
       const socket = await this.state.gameConnection;
-      const ball = await Object.assign({}, this.state.ball);
+      const copyBall = await Object.assign({}, ball.configBall);
       const player = await Object.assign({}, this.state.player);
       const aim = await Object.assign({}, this.state.aim);
 
-      let Dx = ball.x - player.x;
-      let Dy = ball.y - player.y;
+      let Dx = copyBall.x - player.x;
+      let Dy = copyBall.y - player.y;
       let d = Math.sqrt(Dx*Dx+Dy*Dy);
 
-      let rb = ball.radius;
+      let rb = copyBall.radius;
       let rp = player.radius;
 
       if (d < rb + rp && player.Kick) {
@@ -345,30 +285,25 @@ class Game extends React.Component {
 
 
         if(aim.x > player.x)
-          ball.dx = ax;
+          copyBall.dx = ax;
         else
-          ball.dx = -ax;
+          copyBall.dx = -ax;
 
         if(aim.y > player.y)
-          ball.dy = ay;
+          copyBall.dy = ay;
         else
-          ball.dy = -ay;
+          copyBall.dy = -ay;
 
-        await this.setState((state, props) => ({
-          ball: ball
-        }));
+        ball.configBall = copyBall;
 
-        await socket.emit('ball point', JSON.stringify(this.state.ball));
+        await socket.emit('ball point', JSON.stringify(ball.configBall));
       }
 
       await this.playerMove();
       await this.playerMove('enemy');
-      await this.ballMove();
-    }, 1);
 
-    // setInterval(async () => {
-    //   await socket.emit('enemy point', JSON.stringify(this.state.player));
-    // }, 100);
+      await ball.ballMove();
+    }, 1);
 
   }
 

@@ -5,6 +5,8 @@ import io from 'socket.io-client';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 
+import Wall from '../../controllers/Wall';
+
 class Game extends React.Component {
   constructor(props) {
     super(props);
@@ -37,19 +39,21 @@ class Game extends React.Component {
         Up: false,
         Kick: false,
       },
-      // enemy: {
-      //   name: '',
-      //   radius: 6,
-      //   x: 40,
-      //   y: 40,
-      //   dx: 0,
-      //   dy: 0,
-      //   gravity: 0.0085,
-      //   drag: 0.8,
-      //   Right: false,
-      //   Left: false,
-      //   Up: false,
-      // },
+      enemy: {
+        name: '',
+        color: 'green',
+        radius: 6,
+        x: 60,
+        y: 40,
+        dx: 0,
+        dy: 0,
+        gravity: 0.0085,
+        drag: 0.8,
+        Right: false,
+        Left: false,
+        Up: false,
+        Kick: false,
+      },
       aim: {
         x: 0,
         y: 0,
@@ -118,6 +122,11 @@ class Game extends React.Component {
     if(ball.x > 100-ball.radius*2) {
       ball.dx *= -1;
     }
+    if(ball.y > 100 - ball.radius*2) {
+      ball.y = 100 - ball.radius*2;
+      ball.dy = -ball.dy * ball.drag;
+      ball.dx = ball.dx * ball.drag;
+    }
     if(ball.y < ball.radius*2) {
       ball.y = ball.radius*2;
       ball.dy = -ball.dy * ball.drag;
@@ -163,6 +172,16 @@ class Game extends React.Component {
     }
   }
 
+  wallFigure(canvas, x, y, width, height, color) {
+    if (canvas.getContext) {
+      const ctx = canvas.getContext('2d');
+
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.fillRect(x, y, width, height);
+    }
+  }
+
   fieldClear() {
     const canvas = document.getElementById('canvas');
     if (canvas.getContext) {
@@ -172,10 +191,10 @@ class Game extends React.Component {
   }
 
   createGame() {
-    axios.get(`http://localhost:3030/api/game/create/${this.state.gameName}`)
+    axios.get(`http://172.20.1.30:3030/api/game/create/${this.state.gameName}`)
       .then(async (res) => {
 
-        const socket = await io(`http://localhost:3031/${this.state.gameName}`, {transports: ['websocket', 'polling', 'flashsocket']});
+        const socket = await io(`http://172.20.1.30:3031/${this.state.gameName}`, {transports: ['websocket', 'polling', 'flashsocket']});
 
         this.setState( (state, props) => ({
           gameConnection: socket
@@ -191,10 +210,13 @@ class Game extends React.Component {
         });
 
         await socket.on('enemy point', (data) => {
-          this.setState((state, props) => ({
-            enemy: Object.assign(state.enemy, JSON.parse(data))
-          }));
+          if (data.id !== socket.id) {
+            this.setState((state, props) => ({
+              enemy: Object.assign(state.enemy, JSON.parse(data.enemy))
+            }));
+          }
         });
+
         if (res.data.createdStatus === 'connected') {
 
           const player = {
@@ -203,8 +225,15 @@ class Game extends React.Component {
             color: 'green',
           };
 
+          const enemy = {
+            x: 40,
+            y: 40,
+            color: 'red',
+          };
+
           await this.setState((state, props) => ({
-            player: Object.assign(state.player, player)
+            player: Object.assign(state.player, player),
+            enemy: Object.assign(state.enemy, enemy)
           }));
         }
         console.log(res.data);
@@ -223,6 +252,8 @@ class Game extends React.Component {
 
   componentDidMount() {
 
+    const wall = new Wall(48, 75, 4, 75, "#42252b");
+
     document.querySelector('canvas').addEventListener('mousedown', async (e) => {
       if (e.button === 0) {
         await this.setState((state, props) => ({
@@ -240,31 +271,45 @@ class Game extends React.Component {
     });
 
     document.addEventListener('keydown', async (e) => {
+      const socket = await this.state.gameConnection;
       switch (e.code) {
         case "KeyW": await this.setState((state, props) => ({
           player: Object.assign(state.player, { Up: true })
-        })); break;
+        }));
+          await socket.emit('enemy point', { enemy: JSON.stringify(this.state.player), id: socket.id });
+          break;
         case "KeyD": await this.setState((state, props) => ({
           player: Object.assign(state.player, { Right: true })
-        })); break;
+        }));
+          await socket.emit('enemy point', { enemy: JSON.stringify(this.state.player), id: socket.id });
+        break;
         case "KeyA": await this.setState((state, props) => ({
           player: Object.assign(state.player, { Left: true })
-        })); break;
+        }));
+          await socket.emit('enemy point', { enemy: JSON.stringify(this.state.player), id: socket.id });
+        break;
         default: break;
       }
     });
 
     document.addEventListener('keyup', async (e) => {
+      const socket = await this.state.gameConnection;
       switch (e.code.toString()) {
         case "KeyW": await this.setState((state, props) => ({
           player: Object.assign(state.player, { Up: false })
-        })); break;
+        }));
+          await socket.emit('enemy point', { enemy: JSON.stringify(this.state.player), id: socket.id });
+        break;
         case "KeyD": await this.setState((state, props) => ({
           player: Object.assign(state.player, { Right: false })
-        })); break;
+        }));
+          await socket.emit('enemy point', { enemy: JSON.stringify(this.state.player), id: socket.id });
+        break;
         case "KeyA": await this.setState((state, props) => ({
           player: Object.assign(state.player, { Left: false })
-        })); break;
+        }));
+          await socket.emit('enemy point', { enemy: JSON.stringify(this.state.player), id: socket.id });
+        break;
         default: break;
       }
     });
@@ -278,12 +323,15 @@ class Game extends React.Component {
     setInterval(async () => {
       await this.fieldClear();
       await this.playerFigure(this.state.player.x * window.innerWidth / 100, (100 - this.state.player.y) * window.innerHeight / 100, this.state.player.color, this.state.player.radius);
-      // await this.playerFigure(this.state.enemy.x * window.innerWidth / 100, (100 - this.state.enemy.y) * window.innerHeight / 100, 'blue', this.state.enemy.radius);
+      await this.playerFigure(this.state.enemy.x * window.innerWidth / 100, (100 - this.state.enemy.y) * window.innerHeight / 100, this.state.enemy.color, this.state.enemy.radius);
 
       await this.ballFigure(this.state.ball.x * window.innerWidth / 100, (100 - this.state.ball.y) * window.innerHeight / 100, 'gray', this.state.ball.radius);
+
+      await wall.drawWall(document.getElementById('canvas'));
     }, 0);
 
     setInterval(async () => {
+      const socket = await this.state.gameConnection;
       const ball = await Object.assign({}, this.state.ball);
       const player = await Object.assign({}, this.state.player);
       const aim = await Object.assign({}, this.state.aim);
@@ -319,12 +367,11 @@ class Game extends React.Component {
           ball: ball
         }));
 
-        const socket = await this.state.gameConnection;
         await socket.emit('ball point', JSON.stringify(this.state.ball));
       }
 
-
       await this.playerMove();
+      await this.playerMove('enemy');
       await this.ballMove();
     }, 1);
 

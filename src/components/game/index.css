@@ -1,7 +1,11 @@
 .game_canvas {
     box-sizing: border-box;
-    border: 1px solid black;
-    background-color: black;
+    border: 0px;
+    background-image: url("../../assets/beach.jpg");
+    background-attachment: fixed;
+    background-position: center, center;
+    background-repeat: no-repeat;
+    background-size: cover;
 }
 .game__form-create {
     display: flex;

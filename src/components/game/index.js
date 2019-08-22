@@ -256,7 +256,7 @@ class Game extends React.Component {
       await this.playerFigure(this.state.player.x * window.innerWidth / 100, (100 - this.state.player.y) * window.innerHeight / 100, this.state.player.color, this.state.player.radius);
       await this.playerFigure(this.state.enemy.x * window.innerWidth / 100, (100 - this.state.enemy.y) * window.innerHeight / 100, this.state.enemy.color, this.state.enemy.radius);
 
-      await ball.ballDraw(document.getElementById('canvas'), 'gray');
+      await ball.ballDraw(document.getElementById('canvas'), document.getElementById('ball'));
 
       await wall.drawWall(document.getElementById('canvas'));
     }, 0);
@@ -325,6 +325,7 @@ class Game extends React.Component {
           </Button>
         </form>
         <canvas id="canvas" className={"game_canvas"} width={window.innerWidth} height={window.innerHeight}>
+          <img id="ball" src={require("./../../assets/ball.png")} alt="ball"/>
         </canvas>
       </div>;
   };

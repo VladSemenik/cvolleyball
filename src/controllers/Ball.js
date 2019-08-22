@@ -42,14 +42,23 @@ class Ball {
     }
   }
 
-  ballDraw (canvas, color) {
+  async ballDraw (canvas, img) {
     if (canvas.getContext) {
       const ctx = canvas.getContext('2d');
-
-      ctx.fillStyle = color;
-      ctx.beginPath();
-      ctx.arc(this.x * window.innerWidth / 100, (100 - this.y) * window.innerHeight / 100, this.radius * window.innerWidth / 100, 0, Math.PI * 2, true);
-      ctx.fill();
+      const point = await Math.floor(Math.sqrt(Math.pow(this.x-(this.x - this.radius), 2) + Math.pow((this.y + this.radius)-this.y,2)));
+      ctx.save();
+      ctx.drawImage(
+        img,
+        0,
+        0,
+        img.width,
+        img.height,
+        (this.x - point) * window.innerWidth / 100,
+        (100 - (this.y + point)) * window.innerHeight / 100,
+        this.radius*2 * window.innerWidth / 100,
+        this.radius*2 * window.innerWidth / 100
+      );
+      ctx.restore();
     }
   }
 

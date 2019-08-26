@@ -4,7 +4,6 @@
     <list default="true" id="0fd599bf-305d-4f29-9d0a-c347d84be671" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/components/game/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/game/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controllers/Player.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/Player.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -27,7 +26,7 @@
   <component name="PropertiesComponent">
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../sv" />
     <property name="list.type.of.created.stylesheet" value="CSS" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
@@ -78,7 +77,9 @@
       <workItem from="1566376932471" duration="18513000" />
       <workItem from="1566454818198" duration="2640000" />
       <workItem from="1566554661426" duration="6797000" />
-      <workItem from="1566799052314" duration="5576000" />
+      <workItem from="1566799052314" duration="5754000" />
+      <workItem from="1566805770503" duration="17000" />
+      <workItem from="1566817591437" duration="8789000" />
     </task>
     <servers />
   </component>

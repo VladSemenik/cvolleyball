@@ -224,23 +224,23 @@ class Game extends React.Component {
 
       if (copyBall.y <= 10){
 
+        copyBall.y = 100;
+        copyBall.dx = 0;
+        copyBall.dy = 0;
+        ball.configBall = copyBall;
+
         if (copyBall.x < 50 && this.state.yourSide === 'left'){
           if (Object.keys(socket).length)
             await socket.emit('score', JSON.stringify({
               [this.state.yourSide]: true
             }));
         }
-        else {
+        else if (copyBall.x > 50 && this.state.yourSide === 'right') {
           if (Object.keys(socket).length)
             await socket.emit('score', JSON.stringify({
               [this.state.yourSide]: true
             }));
         }
-
-        copyBall.y = 100;
-        copyBall.dx = 0;
-        copyBall.dy = 0;
-        ball.configBall = copyBall;
 
         if (Object.keys(socket).length) {
           await socket.emit('ball point', JSON.stringify(ball.configBall));

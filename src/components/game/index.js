@@ -18,6 +18,7 @@ class Game extends React.Component {
     this.state = {
       data: "Game page",
       game: false,
+      yourSide: "left",
       gameName: '',
       gameConnection: {},
       score: {
@@ -64,11 +65,11 @@ class Game extends React.Component {
           }
         });
 
-        await socket.on('score game', async (data) => {
+        await socket.on('score', async (data) => {
           if (data.id !== socket.id) {
             await this.setState((state) =>
               Object.assign({}, {
-                score: JSON.parse(data.score)
+                score: JSON.parse(data)
               }))
           }
         });
@@ -83,6 +84,14 @@ class Game extends React.Component {
 
           await player.setConfigPlayer(Object.assign({}, copyPlayer));
           await enemy.setConfigPlayer(Object.assign({}, copyEnemy));
+
+          this.setState(() => ({
+            yourSide: 'right'
+          }));
+        } else if (res.data.createdStatus === 'created') {
+          this.setState(() => ({
+            yourSide: 'left'
+          }));
         }
         console.log(res.data);
       })
@@ -214,16 +223,19 @@ class Game extends React.Component {
       }
 
       if (copyBall.y <= 10){
-        const score = await Object.assign({}, this.state.score);
 
-        if (copyBall.x < 50)
-          score.left++;
-        else
-          score.right++;
-
-        this.setState((state, props) => ({
-          score: score
-        }));
+        if (copyBall.x < 50 && this.state.yourSide === 'left'){
+          if (Object.keys(socket).length)
+            await socket.emit('score', JSON.stringify({
+              [this.state.yourSide]: true
+            }));
+        }
+        else {
+          if (Object.keys(socket).length)
+            await socket.emit('score', JSON.stringify({
+              [this.state.yourSide]: true
+            }));
+        }
 
         copyBall.y = 100;
         copyBall.dx = 0;
@@ -231,7 +243,6 @@ class Game extends React.Component {
         ball.configBall = copyBall;
 
         if (Object.keys(socket).length) {
-          await socket.emit('score game', JSON.stringify(this.state.score));
           await socket.emit('ball point', JSON.stringify(ball.configBall));
         }
       }
